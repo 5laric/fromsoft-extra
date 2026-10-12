@@ -9,17 +9,21 @@ mod rva_data;
 pub use bundle::*;
 
 const LANG_ID_EN: u16 = 0x0009;
+const LANG_ID_JP: u16 = 0x0011;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum GameVersion {
    
     Er1171,
+    /// Japanese App Ver 1.17.1 (exe 2.7.1.1).
+    Er1171Jp,
 }
 
 impl GameVersion {
     fn from_metadata(product: &str, lang_id: u16, version: &str) -> Option<Self> {
         match (product, lang_id, version) {
             ("ELDEN RING™", LANG_ID_EN, "2.7.1.0") => Some(Self::Er1171),
+            ("ELDEN RING™", LANG_ID_JP, "2.7.1.1") => Some(Self::Er1171Jp),
             _ => None,
         }
     }
@@ -74,7 +78,10 @@ impl RvaBundle {
     fn for_version(version: GameVersion) -> Self {
        
         match version {
-            GameVersion::Er1171 => rva_data::RVAS,
+            // Every entry in this bundle is a function. Upstream fromsoftware-rs's generated
+            // WW 2.7.1.0 and JP 2.7.1.1 tables agree on all function addresses (they differ
+            // only in vtables), so JP shares the WW addresses.
+            GameVersion::Er1171 | GameVersion::Er1171Jp => rva_data::RVAS,
         }    
     }
 }
